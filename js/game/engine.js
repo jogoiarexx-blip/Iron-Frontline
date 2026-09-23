@@ -4,7 +4,7 @@ import { Input } from "./input.js";
 import { loadSave, recordRun, unlockMission, writeSave } from "./save.js";
 import { PHASES, getPhaseById, phaseTriggerX } from "./phases/phases.js";
 import { getEnemySpec, getActorHitbox } from "./enemies/enemy-system.js";
-import { PLAYER_CONFIG, weaponMagSize, getPlayerState, getPlayerHitbox } from "./player/player-system.js";
+import { PLAYER_CONFIG, weaponMagSize, getPlayerState } from "./player/player-system.js";
 import { createBossState } from "./bosses/boss-system.js";
 import { updatePlayerController, firePlayerController, tryMeleeController, getMuzzle, getPlayerBox } from "./player/player-controller.js";
 import { updateEnemyAI, clearEnemyProjectiles } from "./enemies/enemy-ai.js";
