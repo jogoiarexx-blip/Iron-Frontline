@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#080b10" />
+  <meta name="description" content="Iron Frontline - run and gun arcade para navegador." />
+  <title>Iron Frontline</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="./assets/css/style.css" />
+</head>
+<body>
+  <main id="app" class="game-shell">
+    <section id="stage" class="stage" aria-label="Iron Frontline">
+      <canvas id="game" width="384" height="216"></canvas>
+
+      <div id="topHud" class="top-hud hidden">
+        <div class="hud-left">
+          <div class="hp-frame"><div id="hpBar" class="hp-bar"></div></div>
+          <div id="weaponText" class="hud-small">RIFLE · AMMO 18/18 · G 3</div>
+        </div>
+        <div class="hud-right">
+          <div id="scoreText" class="accent">SCORE 0</div>
+          <div id="missionText" class="hud-small">CITY UNDER FIRE</div>
+        </div>
+      </div>
+
+      <div id="objective" class="objective hidden"></div>
+
+      <div id="bossHud" class="boss-hud hidden">
+        <div id="bossName" class="boss-name">WAR MACHINE</div>
+        <div class="boss-frame"><div id="bossBar" class="boss-bar"></div></div>
+        <div id="bossSub" class="boss-sub"></div>
+      </div>
+
+      <pre id="debug" class="debug hidden"></pre>
+
+      <section id="menu" class="overlay panel-wrap">
+        <div class="panel">
+          <h1>IRON FRONTLINE</h1>
+          <p class="tagline">RUN AND GUN ARCADE</p>
+          <div id="missions" class="mission-list"></div>
+          <div class="row actions-row">
+            <button id="debugBtn" class="btn secondary">DEBUG</button>
+            <button id="flashBtn" class="btn secondary">FLASH ON</button>
+          </div>
+          <p id="padText" class="pad-text"></p>
+          <p class="controls-help">A/D mover · W/ESPAÇO pular · S agachar · J atirar · K granada · F melee · R recarregar · ESC pausa</p>
+        </div>
+      </section>
+
+      <section id="loading" class="overlay panel-wrap hidden">
+        <div class="panel compact">
+          <h2 id="loadingMission">MISSION 01</h2>
+          <p id="loadingTitle" class="tagline">CITY UNDER FIRE</p>
+          <p id="loadingStatus" class="loading-status">LOADING…</p>
+          <div class="progress-frame"><div id="loadBar" class="progress-bar"></div></div>
+          <div id="loadPct" class="load-pct">0%</div>
+        </div>
+      </section>
+
+      <section id="intro" class="overlay panel-wrap hidden">
+        <div class="panel compact">
+          <h2 id="introMission">MISSION 01</h2>
+          <p id="introTitle" class="tagline">CITY UNDER FIRE</p>
+          <div class="start-text">START!</div>
+        </div>
+      </section>
+
+      <section id="paused" class="overlay panel-wrap hidden">
+        <div class="panel compact">
+          <h2>PAUSED</h2>
+          <button id="resumeBtn" class="btn primary">RESUME</button>
+          <button id="pauseMenuBtn" class="btn secondary">MENU</button>
+        </div>
+      </section>
+
+      <section id="gameover" class="overlay panel-wrap hidden">
+        <div class="panel compact">
+          <h2 class="danger">GAME OVER</h2>
+          <button id="retryBtn" class="btn primary">RETRY CHECKPOINT</button>
+          <button id="overMenuBtn" class="btn secondary">MENU</button>
+        </div>
+      </section>
+
+      <section id="complete" class="overlay panel-wrap hidden">
+        <div class="panel compact">
+          <h2 class="ok">MISSION COMPLETE</h2>
+          <div id="results" class="results"></div>
+          <button id="continueBtn" class="btn primary">CONTINUE</button>
+        </div>
+      </section>
+
+      <div id="warning" class="warning hidden"><span>ATENÇÃO</span><span>ATENÇÃO</span></div>
+
+      <div id="touchControls" class="touch-controls">
+        <div class="touch-left">
+          <button data-touch="left" class="touch-btn move">◀</button>
+          <button data-touch="right" class="touch-btn move">▶</button>
+        </div>
+        <div class="touch-right">
+          <button data-touch="crouch" class="touch-btn">C</button>
+          <button data-touch="melee" class="touch-btn">M</button>
+          <button data-touch="grenade" class="touch-btn">G</button>
+          <button data-touch="reload" class="touch-btn">R</button>
+          <button data-touch="jump" class="touch-btn big">J</button>
+          <button data-touch="shoot" class="touch-btn big fire">FIRE</button>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script type="module" src="./assets/js/main.js"></script>
+</body>
+</html>
