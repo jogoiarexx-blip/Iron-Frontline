@@ -2,6 +2,19 @@ import { aabb } from "../render/render-utils.js";
 import { PLAYER_CONFIG } from "./player-system.js";
 import { writeSave } from "../save.js";
 
+
+export function startPlayerReload(game, force = false) {
+    if (!force && game.reloadT > 0)
+        return;
+    const needed = game.weaponMagSize();
+    if (game.ammo >= needed)
+        return;
+    game.reloadT = game.weapon === "rocket" ? 0.8 : game.weapon === "shot" ? 0.72 : 0.58;
+    game.reloadFxT = game.reloadT;
+    game.objective = `RELOADING ${game.weapon.toUpperCase()}`;
+    game.objectiveT = 0.35;
+}
+
 export function updatePlayerController(game, dt) {
     if (game.hp <= 0)
         return;
