@@ -1,22 +1,25 @@
 # Iron Frontline — GitHub Pages build
 
-Esta pasta já está pronta para hospedagem estática.
+Projeto organizado para hospedagem estática no GitHub Pages.
 
 ## Estrutura
 - `index.html` — entrada do jogo
 - `css/style.css` — interface
 - `js/main.js` — UI e inicialização
-- `js/game/` — núcleo do jogo compilado para ES modules
-- `assets/sprites/` — sprites
+- `js/game/` — núcleo do jogo em ES modules
+- `assets/player/` — sprites do player
+- `assets/enemies/` — sprites dos inimigos
+- `assets/vehicles/` — veículos
+- `assets/bosses/` — bosses
+- `assets/fx/` — efeitos visuais
 - `.nojekyll` — evita processamento do GitHub Pages
 
-## Publicar no GitHub Pages
-1. Envie o conteúdo desta pasta para a raiz do repositório.
-2. No GitHub, abra **Settings > Pages**.
-3. Em **Build and deployment**, escolha **Deploy from a branch**.
-4. Escolha a branch `main` e a pasta `/(root)`.
-5. Salve.
+## GitHub Pages
+Em **Settings > Pages**, use:
+- **Deploy from a branch**
+- branch `main`
+- pasta `/(root)`
 
-O jogo usa caminhos relativos (`./css/...`, `./js/...` e `./assets/...`), portanto funciona também em URLs de projeto como `usuario.github.io/nome-do-repositorio/`.
+Os caminhos são relativos, então o jogo funciona em URLs de projeto como `usuario.github.io/nome-do-repositorio/`.
 
 Não é necessário Node, npm, Vite, React ou servidor para executar a versão publicada.

@@ -1,28 +1,28 @@
 const GLOBAL_ASSETS = [
-    ["player-idle", "./assets/sprites/player-idle.webp"],
-    ["player-run", "./assets/sprites/player-run.webp"],
-    ["player-core-sheet", "./assets/sprites/player-core-sheet.png"],
-    ["player-rifle-sheet", "./assets/sprites/player-rifle-sheet.png"],
-    ["player-weapon-sheet", "./assets/sprites/player-weapon-sheet.png"],
-    ["player-special-sheet", "./assets/sprites/player-special-sheet.png"],
-    ["enemy-rifle-sheet", "./assets/sprites/enemy-rifle-sheet.png"],
-    ["enemy-heavy-sheet", "./assets/sprites/enemy-heavy-sheet.png"],
-    ["fx-explode", "./assets/sprites/fx-explode.webp"],
+    ["player-idle", "./assets/player/player-idle.webp"],
+    ["player-run", "./assets/player/player-run.webp"],
+    ["player-core-sheet", "./assets/player/player-core-sheet.png"],
+    ["player-rifle-sheet", "./assets/player/player-rifle-sheet.png"],
+    ["player-weapon-sheet", "./assets/player/player-weapon-sheet.png"],
+    ["player-special-sheet", "./assets/player/player-special-sheet.png"],
+    ["enemy-rifle-sheet", "./assets/enemies/enemy-rifle-sheet.png"],
+    ["enemy-heavy-sheet", "./assets/enemies/enemy-heavy-sheet.png"],
+    ["fx-explode", "./assets/fx/fx-explode.webp"],
 ];
 const PHASE_ASSETS = {
     "01": [
-        ["enemy-rifle", "./assets/sprites/enemy-rifle.webp"],
-        ["enemy-heavy", "./assets/sprites/enemy-heavy.webp"],
-        ["jeep", "./assets/sprites/jeep.webp"],
-        ["boss-iron", "./assets/sprites/boss-iron.webp"],
+        ["enemy-rifle", "./assets/enemies/enemy-rifle.webp"],
+        ["enemy-heavy", "./assets/enemies/enemy-heavy.webp"],
+        ["jeep", "./assets/vehicles/jeep.webp"],
+        ["boss-iron", "./assets/bosses/boss-iron.webp"],
     ],
     "02": [
-        ["enemy-rifle", "./assets/sprites/enemy-rifle.webp"],
-        ["enemy-heavy", "./assets/sprites/enemy-heavy.webp"],
+        ["enemy-rifle", "./assets/enemies/enemy-rifle.webp"],
+        ["enemy-heavy", "./assets/enemies/enemy-heavy.webp"],
     ],
     "03": [
-        ["enemy-rifle", "./assets/sprites/enemy-rifle.webp"],
-        ["enemy-heavy", "./assets/sprites/enemy-heavy.webp"],
+        ["enemy-rifle", "./assets/enemies/enemy-rifle.webp"],
+        ["enemy-heavy", "./assets/enemies/enemy-heavy.webp"],
     ],
 };
 export class AssetManager {
@@ -104,8 +104,6 @@ export function drawSheet(ctx, img, frame, cols, rows, dx, dy, dw, dh, facing, o
     const row = Math.floor(frame / cols) % rows;
     ctx.save();
     ctx.translate(dx + dw / 2, dy + dh / 2);
-    // Some generated enemy/boss sheets point left natively. Flip only when
-    // requested facing differs from the sheet's native orientation.
     if (facing !== nativeFacing)
         ctx.scale(-1, 1);
     ctx.imageSmoothingEnabled = false;
