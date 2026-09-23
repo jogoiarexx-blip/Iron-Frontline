@@ -6,7 +6,7 @@ import { PHASES, getPhaseById, phaseTriggerX } from "./phases/phases.js";
 import { getEnemySpec, getActorHitbox } from "./enemies/enemy-system.js";
 import { PLAYER_CONFIG, weaponMagSize, getPlayerState } from "./player/player-system.js";
 import { createBossState } from "./bosses/boss-system.js";
-import { updatePlayerController, firePlayerController, tryMeleeController, getMuzzle, getPlayerBox } from "./player/player-controller.js";
+import { updatePlayerController, firePlayerController, tryMeleeController, getMuzzle, getPlayerBox, startPlayerReload } from "./player/player-controller.js";
 import { updateEnemyAI, clearEnemyProjectiles } from "./enemies/enemy-ai.js";
 import { updateBossCombat, runBossAttack, damageBoss } from "./bosses/boss-combat.js";
 import { spawnProjectile, updateProjectiles, damageActor, dropPickupItem, explodeAt, damagePlayer, spawnMuzzleFx, spawnWeaponSmoke, spawnBurst, updateParticles } from "./systems/combat-system.js";
@@ -680,6 +680,9 @@ export class IronFrontline {
     }
     actorBox(a) {
         return getActorHitbox(a);
+    }
+    startReload(force = false) {
+        return startPlayerReload(this, force);
     }
     updatePlayer(dt) {
         return updatePlayerController(this, dt);
