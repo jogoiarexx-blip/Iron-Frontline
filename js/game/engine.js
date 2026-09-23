@@ -2,104 +2,14 @@ import { AssetManager, drawSheet } from "./assets.js";
 import { GameAudio } from "./audio.js";
 import { Input } from "./input.js";
 import { loadSave, recordRun, unlockMission, writeSave } from "./save.js";
+import { PHASES, getPhaseById, phaseTriggerX } from "./phases/phases.js";
+import { getEnemySpec, getActorHitbox } from "./enemies/enemy-system.js";
+import { PLAYER_CONFIG, weaponMagSize, getPlayerState, getPlayerHitbox } from "./player/player-system.js";
+import { createBossState, bossAttackCooldown, warMachineMovement } from "./bosses/boss-system.js";
+import { aabb, hash } from "./render/render-utils.js";
 export const VW = 384;
 export const VH = 216;
 const FIXED = 1 / 60;
-const PHASES = [
-    {
-        id: "01",
-        num: "01",
-        name: "CITY UNDER FIRE",
-        title: "Ash Vale drops into a burning district. Push east. Extract civilians.",
-        width: 4600,
-        ground: 176,
-        sky: ["#0a1220", "#2a1a18"],
-        next: "02",
-        boss: { id: "iron", name: "WAR MACHINE", sub: '"THE IRON DEVOURER"' },
-        mini: { time: 22, type: "jeep" },
-        events: [
-            { time: 1.2, type: "spawn", enemy: "rifle", side: "right", count: 2 },
-            { time: 3.5, type: "spawn", enemy: "knife", side: "left", count: 2 },
-            { time: 5.2, type: "barrel" },
-            { time: 6, type: "spawn", enemy: "gren", side: "right", count: 1 },
-            { time: 8, type: "crate" },
-            { time: 9.5, type: "arena", enemy: "rifle", count: 5, text: "STREET LOCKDOWN" },
-            { time: 11.5, type: "collapse", text: "BUILDING COLLAPSE!" },
-            { time: 12, type: "hostage", text: "RESCUE THE CIVILIAN" },
-            { time: 14, type: "spawn", enemy: "shield", side: "left", count: 1 },
-            { time: 16, type: "spawn", enemy: "sniper", side: "right", count: 1 },
-            { time: 17.5, type: "spawn", enemy: "para", side: "right", count: 2 },
-            { time: 20, type: "barricade", text: "DESTROY THE BARRICADE" },
-            { time: 26, type: "spawn", enemy: "rocket", side: "right", count: 1 },
-            { time: 28, type: "arena", enemy: "rifle", count: 6, text: "CROSS FIRE" },
-            { time: 30, type: "spawn", enemy: "turret", side: "right", count: 1 },
-            { time: 32, type: "secret" },
-            { time: 34, type: "spawn", enemy: "heavy", side: "right", count: 1 },
-            { time: 36, type: "arena", enemy: "shield", count: 4, text: "BREAK THE LINE" },
-            { time: 38, type: "collapse", text: "CITY IS COMING DOWN" },
-            { time: 39, type: "barrel" },
-            { time: 44, type: "bossPrep", text: "BOSS AREA" },
-        ],
-    },
-    {
-        id: "02",
-        num: "02",
-        name: "DESERT ASSAULT",
-        title: "Heat shimmer. Convoy wrecks. Hold the ridge.",
-        width: 4400,
-        ground: 176,
-        sky: ["#24180c", "#6a4020"],
-        next: "03",
-        boss: { id: "sand", name: "DUNE CRAWLER", sub: '"THE THIRST ENGINE"' },
-        mini: { time: 20, type: "tank" },
-        events: [
-            { time: 1, type: "spawn", enemy: "rifle", side: "right", count: 3 },
-            { time: 4, type: "spawn", enemy: "gren", side: "left", count: 1 },
-            { time: 8, type: "spawn", enemy: "rifle", side: "right", count: 2 },
-            { time: 11, type: "hostage" },
-            { time: 13, type: "spawn", enemy: "heavy", side: "right", count: 1 },
-            { time: 16, type: "crate" },
-            { time: 26, type: "spawn", enemy: "rifle", side: "left", count: 4 },
-            { time: 30, type: "spawn", enemy: "heavy", side: "right", count: 1 },
-            { time: 34, type: "secret" },
-            { time: 38, type: "spawn", enemy: "gren", side: "right", count: 2 },
-            { time: 42, type: "bossPrep" },
-        ],
-    },
-    {
-        id: "03",
-        num: "03",
-        name: "IRON HARBOR",
-        title: "Night docks. Cranes. One last machine in the water.",
-        width: 4800,
-        ground: 176,
-        sky: ["#050814", "#102030"],
-        next: null,
-        boss: { id: "dread", name: "HARBOR DREAD", sub: '"THE WET IRON"' },
-        mini: { time: 21, type: "gunship" },
-        events: [
-            { time: 1.2, type: "spawn", enemy: "rifle", side: "right", count: 2 },
-            { time: 4, type: "spawn", enemy: "rifle", side: "left", count: 3 },
-            { time: 7, type: "spawn", enemy: "heavy", side: "right", count: 1 },
-            { time: 10, type: "hostage" },
-            { time: 12, type: "crate" },
-            { time: 15, type: "spawn", enemy: "gren", side: "left", count: 2 },
-            { time: 18, type: "spawn", enemy: "rifle", side: "right", count: 3 },
-            { time: 28, type: "spawn", enemy: "heavy", side: "left", count: 1 },
-            { time: 32, type: "secret" },
-            { time: 35, type: "spawn", enemy: "rifle", side: "right", count: 4 },
-            { time: 40, type: "spawn", enemy: "gren", side: "right", count: 2 },
-            { time: 45, type: "bossPrep" },
-        ],
-    },
-];
-function aabb(a, b) {
-    return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
-}
-function hash(n) {
-    const x = Math.sin(n * 127.1) * 43758.5453;
-    return x - Math.floor(x);
-}
 export class IronFrontline {
     constructor(canvas) {
         this.input = new Input();
@@ -126,14 +36,14 @@ export class IronFrontline {
         this.py = 120;
         this.pvx = 0;
         this.pvy = 0;
-        this.pW = 18;
-        this.pH = 28;
+        this.pW = PLAYER_CONFIG.width;
+        this.pH = PLAYER_CONFIG.height;
         this.facing = "right";
         this.onGround = false;
         this.coyote = 0;
         this.jumpBuf = 0;
-        this.hp = 100;
-        this.maxHp = 100;
+        this.hp = PLAYER_CONFIG.maxHp;
+        this.maxHp = PLAYER_CONFIG.maxHp;
         this.inv = 0;
         this.shootCd = 0;
         this.nadeCd = 0;
@@ -241,7 +151,7 @@ export class IronFrontline {
     }
     playMission(id) {
         this.audio.unlock();
-        const p = PHASES.find((x) => x.id === id) ?? PHASES[0];
+        const p = getPhaseById(id);
         void this.beginPhase(p, false);
     }
     continueAfterComplete() {
@@ -451,10 +361,7 @@ export class IronFrontline {
         if (this.screen === "miniboss" || this.arenaActive)
             return;
         const evs = this.phase.events;
-        const bossTime = Math.max(1, evs[evs.length - 1]?.time ?? 45);
-        const travelStart = 180;
-        const travelEnd = Math.max(travelStart + 1, this.phase.width - 620);
-        const triggerFor = (time) => travelStart + (time / bossTime) * (travelEnd - travelStart);
+        const triggerFor = (time) => phaseTriggerX(this.phase, time);
         while (this.eventI < evs.length && this.px >= triggerFor(evs[this.eventI].time)) {
             const e = evs[this.eventI];
             this.eventI++;
@@ -551,27 +458,7 @@ export class IronFrontline {
         this.objectiveT = 3.2;
         const b = this.phase.boss;
         const ground = this.phase.ground;
-        this.boss = {
-            id: b.id,
-            name: b.name,
-            sub: b.sub,
-            x: this.camX + VW + 46,
-            y: ground - (b.id === "iron" ? 72 : 64),
-            w: b.id === "dread" ? 110 : 96,
-            h: b.id === "iron" ? 72 : 64,
-            hp: b.id === "sand" ? 1400 : 1200,
-            max: b.id === "sand" ? 1400 : 1200,
-            facing: "left",
-            phase: 1,
-            st: "intro",
-            t: 3.8,
-            atk: 1.2,
-            inv: true,
-            color: b.id === "sand" ? "#c4843a" : b.id === "dread" ? "#3a5a6a" : "#8a3030",
-            vx: -110,
-            fireFx: 0,
-            cue: 0,
-        };
+        this.boss = createBossState(b, this.camX, VW, ground);
         this.audio.impact();
         this.shake = 10;
         this.setpieceFlash = 0.15;
@@ -581,15 +468,7 @@ export class IronFrontline {
         const margin = 28 + i * 22;
         const x = side === "left" ? this.camX - margin : this.camX + VW + margin;
         const facing = side === "left" ? "right" : "left";
-        const spec = type === "heavy" ? { w: 22, h: 30, hp: 90, spd: 42, score: 300, color: "#6a3030" } :
-            type === "gren" ? { w: 16, h: 26, hp: 45, spd: 55, score: 180, color: "#8a5a20" } :
-                type === "knife" ? { w: 15, h: 25, hp: 34, spd: 95, score: 140, color: "#8a3038" } :
-                    type === "shield" ? { w: 20, h: 28, hp: 120, spd: 38, score: 350, color: "#39566b" } :
-                        type === "rocket" ? { w: 18, h: 27, hp: 55, spd: 46, score: 260, color: "#56652d" } :
-                            type === "sniper" ? { w: 16, h: 26, hp: 38, spd: 22, score: 240, color: "#4b4f67" } :
-                                type === "para" ? { w: 16, h: 26, hp: 32, spd: 58, score: 180, color: "#596d45" } :
-                                    type === "turret" ? { w: 22, h: 20, hp: 100, spd: 0, score: 320, color: "#4b555c" } :
-                                        { w: 16, h: 26, hp: 28, spd: 70, score: 100, color: "#a33" };
+        const spec = getEnemySpec(type);
         this.actors.push({
             kind: "enemy",
             type,
@@ -788,59 +667,13 @@ export class IronFrontline {
         });
     }
     weaponMagSize(w = this.weapon) {
-        return w === "shot" ? 6 : w === "rocket" ? 1 : 18;
-    }
-    startReload(force = false) {
-        if (!force && this.reloadT > 0)
-            return;
-        const needed = this.weaponMagSize();
-        if (this.ammo >= needed)
-            return;
-        this.reloadT = this.weapon === "rocket" ? 0.8 : this.weapon === "shot" ? 0.72 : 0.58;
-        this.reloadFxT = this.reloadT;
-        this.objective = `RELOADING ${this.weapon.toUpperCase()}`;
-        this.objectiveT = 0.35;
+        return weaponMagSize(w);
     }
     playerState() {
-        if (this.hp <= 0)
-            return "dead";
-        if (this.hurtFxT > 0.01)
-            return "hurt";
-        if (this.reloadT > 0.01)
-            return "reload";
-        if (this.grenadeFxT > 0.01)
-            return "grenade";
-        if (this.meleeFxT > 0.01)
-            return "melee";
-        if (this.pickupFxT > 0.01)
-            return "pickup";
-        if (this.shootFxT > 0.01)
-            return "shoot";
-        if (!this.onGround)
-            return "jump";
-        if (this.crouch)
-            return "crouch";
-        if (Math.abs(this.pvx) > 20)
-            return "run";
-        return "idle";
+        return getPlayerState(this);
     }
     actorBox(a) {
-        if (a.kind === "vehicle")
-            return { x: a.x + 2, y: a.y + 3, w: a.w - 4, h: a.h - 4 };
-        if (a.kind !== "enemy")
-            return { x: a.x, y: a.y, w: a.w, h: a.h };
-        const dead = !a.alive;
-        if (dead)
-            return { x: a.x + 2, y: a.y + a.h * 0.55, w: Math.max(8, a.w - 4), h: Math.max(6, a.h * 0.35) };
-        if (a.type === "shield")
-            return { x: a.x + 4, y: a.y + 4, w: a.w - 8, h: a.h - 5 };
-        if (a.type === "knife")
-            return { x: a.x + 3, y: a.y + 4, w: a.w - 6, h: a.h - 5 };
-        if (a.type === "turret")
-            return { x: a.x + 2, y: a.y + 5, w: a.w - 4, h: a.h - 5 };
-        if (a.state === "drop")
-            return { x: a.x + 3, y: a.y + 2, w: a.w - 6, h: a.h - 3 };
-        return { x: a.x + 3, y: a.y + 3, w: a.w - 6, h: a.h - 4 };
+        return getActorHitbox(a);
     }
     updatePlayer(dt) {
         if (this.hp <= 0)
@@ -848,7 +681,7 @@ export class IronFrontline {
         const a = this.input.actions;
         this.crouch = a.crouch && this.onGround;
         const locked = this.reloadT > 0.01 || this.grenadeFxT > 0.01 || this.meleeFxT > 0.01;
-        const spd = this.crouch ? 70 : 150;
+        const spd = this.crouch ? PLAYER_CONFIG.crouchSpeed : PLAYER_CONFIG.moveSpeed;
         this.pvx = locked ? this.pvx * 0.45 : a.moveX * spd;
         if (a.moveX > 0.2)
             this.facing = "right";
@@ -863,7 +696,7 @@ export class IronFrontline {
         else
             this.jumpBuf -= dt;
         if (!locked && this.jumpBuf > 0 && this.coyote > 0) {
-            this.pvy = -250;
+            this.pvy = PLAYER_CONFIG.jumpVelocity;
             this.onGround = false;
             this.coyote = 0;
             this.jumpBuf = 0;
@@ -1291,10 +1124,9 @@ export class IronFrontline {
         const arenaLeft = Math.max(0, this.phase.width - VW + 10);
         const arenaRight = this.phase.width - b.w - 16;
         if (b.id === "iron") {
-            const offset = b.phase === 3 ? 82 : b.phase === 2 ? 104 : 122;
-            const targetX = Math.max(arenaLeft, Math.min(arenaRight, this.px - (this.px < b.x ? -offset : offset)));
-            const spd = b.phase === 1 ? 34 : b.phase === 2 ? 46 : 62;
-            b.vx = Math.max(-spd, Math.min(spd, (targetX - b.x) * 1.45));
+            const movement = warMachineMovement(b.phase);
+            const targetX = Math.max(arenaLeft, Math.min(arenaRight, this.px - (this.px < b.x ? -movement.offset : movement.offset)));
+            b.vx = Math.max(-movement.speed, Math.min(movement.speed, (targetX - b.x) * 1.45));
             b.x += b.vx * dt;
             if (Math.abs(targetX - b.x) < 8)
                 b.vx *= 0.4;
@@ -1304,7 +1136,7 @@ export class IronFrontline {
         b.atk -= dt;
         if (b.atk <= 0) {
             this.bossAttack(b);
-            b.atk = b.phase === 1 ? 1.45 : b.phase === 2 ? 0.98 : 0.66;
+            b.atk = bossAttackCooldown(b.phase);
         }
         if (b.y + b.h < g)
             b.y += 80 * dt;
